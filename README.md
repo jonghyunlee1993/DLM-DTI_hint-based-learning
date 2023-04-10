@@ -19,6 +19,9 @@ The drug discovery process is demanding and time-consuming, and machine learning
 - Binary classification: DAVIS, Binding DB, and BIOSNAP
 - Downloaded from [MolTrans](https://github.com/kexinhuang12345/MolTrans/tree/master/dataset)
 
+## Weights
+- [Google Drive](https://drive.google.com/drive/folders/1197LV9XH73k-PXVNf1JnOvZ8xot99gaX?usp=sharing)
+
 ## Performances
 | Dataset   | Metric      | MolTrans | fine-tuning BERT | DLM-DTI   |
 | --------- | ----------- | -------- | ---------------- | --------- |
