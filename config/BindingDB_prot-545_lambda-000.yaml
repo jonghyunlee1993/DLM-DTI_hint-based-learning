@@ -1,0 +1,29 @@
+dataset: BindingDB
+
+device: 0
+
+prot_length: 
+    teacher: 545
+    student: 545
+
+
+lambda:
+    learnable: False
+    fixed_value: 0
+
+
+prot_encoder:
+    hidden_size: 1024
+    num_hidden_layers: 2
+    num_attention_heads: 16
+    intermediate_size: 4096
+    hidden_act: "gelu"
+
+
+training_config:
+    batch_size: 32
+    num_workers: 16
+    epochs: 50
+    hidden_dim: 1024
+    learning_rate: 0.0001
+

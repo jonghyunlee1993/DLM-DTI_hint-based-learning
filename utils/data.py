@@ -8,7 +8,6 @@ from torch.utils.data import DataLoader, Dataset, WeightedRandomSampler
 
 def load_dataset(mode="DAVIS"):
     if mode in ["DAVIS", "BindingDB", "BIOSNAP"]:
-        print(f"Load dataset: {mode}")
         train_df = pd.read_csv(f"./data/{mode}_train.csv")
         valid_df = pd.read_csv(f"./data/{mode}_valid.csv")
         test_df = pd.read_csv(f"./data/{mode}_test.csv")
@@ -34,13 +33,15 @@ class DTIDataset(Dataset):
                  prot_feat_teacher, 
                  mol_tokenizer, 
                  prot_tokenizer, 
-                 max_length):
+                 max_length, 
+                 d_mode="merged"):
         
         self.data = data
         self.prot_feat_teacher = prot_feat_teacher
         self.max_length = max_length
         self.mol_tokenizer = mol_tokenizer
         self.prot_tokenizer = prot_tokenizer
+        self.d_mode = d_mode
         
     def get_mol_feat(self, smiles):
         return self.mol_tokenizer(smiles, max_length=512, truncation=True)
@@ -63,12 +64,20 @@ class DTIDataset(Dataset):
         prot_feat_teacher = self.get_prot_feat_teacher(fasta)
         
         y = self.data.loc[index, "Label"]
-        source = self.data.loc[index, "Source"]
-        if source == "DAVIS":
+        
+        if self.d_mode == "merged":
+            source = self.data.loc[index, "Source"]
+            if source == "DAVIS":
+                source = 1
+            elif source == "BindingDB":
+                source = 2
+            elif source == "BIOSNAP":
+                source = 3
+        elif self.d_mode == "DAVIS":
             source = 1
-        elif source == "BindingDB":
+        elif self.d_mode == "BindingDB":
             source = 2
-        elif source == "BIOSNAP":
+        elif self.d_mode == "BIOSNAP":
             source = 3
                 
         return mol_feat, prot_feat_student, prot_feat_teacher, y, source
@@ -114,23 +123,25 @@ def get_dataloaders(train_df,
                     mol_tokenizer, 
                     prot_tokenizer, 
                     max_lenght, 
+                    d_mode="merged", 
                     target_col_name="Label",
                     batch_size=128,
                     num_workers=-1):
     
     train_dataset = DTIDataset(train_df, prot_feat_teacher, 
-                               mol_tokenizer, prot_tokenizer, max_lenght)
+                               mol_tokenizer, prot_tokenizer, max_lenght, d_mode=d_mode)
     valid_dataset = DTIDataset(valid_df, prot_feat_teacher, 
-                               mol_tokenizer, prot_tokenizer, max_lenght)
+                               mol_tokenizer, prot_tokenizer, max_lenght, d_mode=d_mode)
     test_dataset = DTIDataset(test_df, prot_feat_teacher, 
-                               mol_tokenizer, prot_tokenizer, max_lenght)
+                               mol_tokenizer, prot_tokenizer, max_lenght, d_mode=d_mode)
     
-    sampler = define_balanced_sampler(train_df, target_col_name)
+    # sampler = define_balanced_sampler(train_df, target_col_name)
     collator = CollateBatch(mol_tokenizer, prot_tokenizer)
     
     train_dataloader = DataLoader(train_dataset, batch_size=batch_size, 
                                   num_workers=num_workers, pin_memory=True,
-                                  sampler=sampler, collate_fn=collator)
+                                  shuffle=True, collate_fn=collator)
+                                #   sampler=sampler, collate_fn=collator)
     
     valid_dataloader = DataLoader(valid_dataset, batch_size=batch_size, 
                                   num_workers=num_workers, pin_memory=True,

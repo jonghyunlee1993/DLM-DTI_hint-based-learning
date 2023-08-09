@@ -4,6 +4,8 @@ wandb
 wandb/*
 weights
 weights/*
+results
+results/*
 
 # Created by https://www.toptal.com/developers/gitignore/api/macos,linux,windows,jupyternotebooks,visualstudiocode
 # Edit at https://www.toptal.com/developers/gitignore?templates=macos,linux,windows,jupyternotebooks,visualstudiocode

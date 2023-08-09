@@ -2,6 +2,7 @@ import yaml
 import time
 import argparse
 import pytorch_lightning as pl
+from pytorch_lightning.loggers import WandbLogger
 
 from utils.data import *
 from utils.eval import *
@@ -35,6 +36,7 @@ if __name__ == "__main__":
         lambda_status = "fixed-" + str(config['lambda']['fixed_value'])
     
     PROJECT_NAME = f"Dataset-{config['dataset']}_ProtT-{config['prot_length']['teacher']}_ProtS-{config['prot_length']['student']}_Lambda-{lambda_status}"
+    wandb_logger = WandbLogger(name=f'{PROJECT_NAME}', project='DLM_DTI_hint_based_learning')
     print(f"\nProject name: {PROJECT_NAME}\n")
     
     train_df, valid_df, test_df = load_dataset(mode=config['dataset'])
@@ -56,12 +58,15 @@ if __name__ == "__main__":
     train_dataloader, valid_dataloader, test_dataloader = get_dataloaders(
         train_df, valid_df, test_df, prot_feat_teacher=prot_feat_teacher, 
         mol_tokenizer=mol_tokenizer, prot_tokenizer=prot_tokenizer, max_lenght=config['prot_length']['student'],
+        d_mode=config['dataset'],
         batch_size=config['training_config']['batch_size'], num_workers=config['training_config']['num_workers']
     )
-        
+           
     model = DTI(mol_encoder, prot_encoder, 
+                is_learnable_lambda=config['lambda']['learnable'],
+                fixed_lambda=config['lambda']['fixed_value'],
                 hidden_dim=config['training_config']['hidden_dim'], 
-                mol_dim=768, prot_dim=512, device_no=config['device'])
+                mol_dim=768, prot_dim=config['prot_encoder']['hidden_size'], device_no=config['device'])
     
     callbacks = define_callbacks(PROJECT_NAME)
     model_interface = DTI_prediction(model, len(train_dataloader), config['training_config']['learning_rate'])
@@ -70,7 +75,8 @@ if __name__ == "__main__":
         gpus=[config['device']],
         enable_progress_bar=True,
         callbacks=callbacks, 
-        precision=16
+        precision=16,
+        logger=wandb_logger
     )
     start_time = time.time()
     trainer.fit(model_interface, train_dataloader, valid_dataloader)

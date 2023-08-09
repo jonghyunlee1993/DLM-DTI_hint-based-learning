@@ -13,14 +13,18 @@ class DTI_prediction(pl.LightningModule):
         self.model = model
         self.len_train_dataloader = len_train_dataloader
         self.learning_rate = learning_rate
-    
+        # self.loss = torch.nn.binary
+        
     def step(self, batch):
         mol_feature, prot_feat_student, prot_feat_teacher, y, source = batch
         prot_feat_teacher = prot_feat_teacher.detach()
         pred, lambda_ = self.model(mol_feature, prot_feat_student, prot_feat_teacher)
         
-        loss = F.binary_cross_entropy_with_logits(pred, y)       
+        loss = F.binary_cross_entropy_with_logits(pred, y)
         pred = F.sigmoid(pred)
+        # loss = F.smooth_l1_loss(pred, y)
+        # pred = pred.float()
+        
         
         return pred, y, source, loss, lambda_
     
@@ -63,7 +67,7 @@ class DTI_prediction(pl.LightningModule):
         self.log('test_auroc', auroc, on_step=False, on_epoch=True, prog_bar=True)
         self.log('test_auprc', auprc, on_step=False, on_epoch=True, prog_bar=True)
         
-        conf_mat = torchmetrics.functional.confusion_matrix(preds, targets, num_classes=2)
+        conf_mat = torchmetrics.functional.confusion_matrix(preds, targets, task="binary")
 
         print(conf_mat)
     

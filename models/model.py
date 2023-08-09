@@ -28,7 +28,7 @@ def define_prot_encoder(max_length,
                         intermediate_size=2048,
                         hidden_act="gelu",
                         pad_token_id=0):
-    prot_tokenizer = BertTokenizer.from_pretrained("Rostlab/prot_bert", do_lower_case=False)
+    prot_tokenizer = BertTokenizer.from_pretrained("Rostlab/prot_bert_bfd", do_lower_case=False)
     # prot_encoder = AutoModel.from_pretrained("Rostlab/prot_bert")
 
     config = BertConfig(
@@ -64,12 +64,13 @@ class DTI(nn.Module):
         super().__init__()
         self.mol_encoder = mol_encoder
         self.prot_encoder = prot_encoder
+        self.is_learnable_lambda = is_learnable_lambda
         
-        if is_learnable_lambda and fixed_lambda == -1:
+        if self.is_learnable_lambda and fixed_lambda == -1:
             self.lambda_ = torch.nn.Parameter(torch.rand(1).to(f"cuda:{device_no}"), requires_grad=True)
-        elif is_learnable_lambda == False and ((fixed_lambda >= 0) and (fixed_lambda <= 1)):
+        elif self.is_learnable_lambda == False and ((fixed_lambda >= 0) and (fixed_lambda <= 1)):
             lambda_ = torch.ones(1) * fixed_lambda
-            self.lambda_ = torch.nn.Parameter(lambda_.to(f"cuda:{device_no}"), requires_grad=False)
+            self.lambda_ = lambda_.to(f"cuda:{device_no}")
         print(f"Initial lambda parameter: {self.lambda_}")
         
         self.molecule_align = nn.Sequential(
@@ -101,7 +102,11 @@ class DTI(nn.Module):
         prot_feat = self.protein_align_student(prot_feat)
         prot_feat_teacher = self.protein_align_teacher(prot_feat_teacher).squeeze(1)
         
-        lambda_ = torch.sigmoid(self.lambda_)
+        if self.is_learnable_lambda == True:
+            lambda_ = torch.sigmoid(self.lambda_)
+        elif self.is_learnable_lambda == False:
+            lambda_ = self.lambda_.detach()
+            
         merged_prot_feat = lambda_ * prot_feat + (1 - lambda_) * prot_feat_teacher
     
         x = torch.cat([mol_feat, merged_prot_feat], dim=1)
@@ -112,4 +117,4 @@ class DTI(nn.Module):
         
         cls_out = self.cls_out(x).squeeze(-1)
         
-        return cls_out, lambda_
+        return cls_out, lambda_.mean()
