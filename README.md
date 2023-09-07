@@ -30,9 +30,9 @@ The drug discovery process is demanding and time-consuming, and machine learning
 Example config file
 
 ```
-dataset: BindingDB
+dataset: BindingDB # There are four options; DAVIS, BindingDB, BIOSNAP, and merged. 
 
-device: 0
+device: 0 # GPU device number. If you have a single GPU, the device number is 0.
 
 prot_length: 
     teacher: 545
