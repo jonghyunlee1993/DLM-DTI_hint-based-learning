@@ -22,3 +22,40 @@ The drug discovery process is demanding and time-consuming, and machine learning
 ## Installation
 - You can install the required libraries by running `pip install -r requirements.txt`
 - If you encounter any installation errors, please don't hesitate to reach out to us for assistance.
+
+## Example
+- You can run experiments using config files (under config folder). For example you can launch an experiment by running `python run.py -c config/BindingDB_prot-545_lambda-learnable.yaml` or `python run.py --config config/BindingDB_prot-545_lambda-learnable.yaml`
+- Hyperparameters are recorded in config file, therefore, you can modify experiments easily. 
+
+Example config file
+
+```
+dataset: BindingDB
+
+device: 0
+
+prot_length: 
+    teacher: 545
+    student: 545
+
+
+lambda:
+    learnable: True
+    fixed_value: -1
+
+
+prot_encoder:
+    hidden_size: 1024
+    num_hidden_layers: 2
+    num_attention_heads: 16
+    intermediate_size: 4096
+    hidden_act: "gelu"
+
+
+training_config:
+    batch_size: 32
+    num_workers: 16
+    epochs: 50
+    hidden_dim: 1024
+    learning_rate: 0.0001
+```
