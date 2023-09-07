@@ -5,7 +5,7 @@ from sklearn.metrics import roc_auc_score, average_precision_score, confusion_ma
 
 def compute_sen_spec(y_test, y_pred):
     tn, fp, fn, tp = confusion_matrix(y_test, y_pred).ravel()
-    
+
     sensitivity = (tp / (tp + fn)).round(4)
     specificity = (tn / (tn + fp)).round(4)
 
@@ -32,11 +32,11 @@ def evaluate(predictions):
             elif source == 3:
                 biosnap_pred.append(pred)
                 biosnap_target.append(target)
-                
+
     davis_pred_label = np.where(np.array(davis_pred) >= 0.5, 1, 0)
     binding_pred_label = np.where(np.array(binding_pred) >= 0.5, 1, 0)
     biosnap_pred_label = np.where(np.array(biosnap_pred) >= 0.5, 1, 0)
-    
+
     try:
         davis_auroc = roc_auc_score(davis_target, davis_pred).round(4)
         davis_auprc = average_precision_score(davis_target, davis_pred).round(4)
@@ -57,9 +57,20 @@ def evaluate(predictions):
         biosnap_sen, biosnap_spec = compute_sen_spec(biosnap_target, biosnap_pred_label)
     except:
         biosnap_auroc, biosnap_auprc, biosnap_sen, biosnap_spec = -1, -1, -1, -1
-    
-    results = [davis_auroc, davis_auprc, davis_sen, davis_spec,
-                 binding_auroc, binding_auprc, binding_sen, binding_spec,
-                 biosnap_auroc, biosnap_auprc, biosnap_sen, biosnap_spec]
-    
+
+    results = [
+        davis_auroc,
+        davis_auprc,
+        davis_sen,
+        davis_spec,
+        binding_auroc,
+        binding_auprc,
+        binding_sen,
+        binding_spec,
+        biosnap_auroc,
+        biosnap_auprc,
+        biosnap_sen,
+        biosnap_spec,
+    ]
+
     return results
