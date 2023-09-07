@@ -59,3 +59,7 @@ training_config:
     hidden_dim: 1024
     learning_rate: 0.0001
 ```
+
+## Arcieved file
+The archived version of the source code and data were stored in Zenodo.
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.8324897.svg)](https://doi.org/10.5281/zenodo.8324897)
