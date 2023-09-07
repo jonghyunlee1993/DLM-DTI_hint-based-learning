@@ -19,3 +19,6 @@ The drug discovery process is demanding and time-consuming, and machine learning
 - Binary classification: DAVIS, Binding DB, and BIOSNAP
 - Downloaded from [MolTrans](https://github.com/kexinhuang12345/MolTrans/tree/master/dataset)
 
+## Installation
+- You can install the required libraries by running `pip install -r requirements.txt`
+- If you encounter any installation errors, please don't hesitate to reach out to us for assistance.
